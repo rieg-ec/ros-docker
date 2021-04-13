@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  ros:
+    build: .
+    command: ["tail", "-f", "/dev/null"]
+    ports:
+     - "11311:11311"
+    volumes:
+      - "./src:/root/catkin_ws/src"
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+    environment:
+      DISPLAY: ${DISPLAY}
+
+  # talker:
+  #   build: ./
+  #   depends_on: 
+  #     - master
+  #   environment:
+  #     - ROS_MASTER_URI=http://master:11311
+  #   command: rosrun roscpp_tutorials talker
+
+  # listener:
+  #   build: ./
+  #   depends_on: 
+  #     - master
+  #   environment:
+  #     - ROS_MASTER_URI=http://master:11311
+  #   command: rosrun roscpp_tutorials listener
