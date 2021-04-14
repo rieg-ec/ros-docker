@@ -22,11 +22,11 @@ ENV LC_ALL C.UTF-8
 
 ENV ROS_DISTRO noetic
 
-RUN apt update && apt install --no-install-recommends -y ros-$ROS_DISTRO-desktop=1.5.0-1*
+RUN apt update && apt install --no-install-recommends -y ros-${ROS_DISTRO}-desktop=1.5.0-1*
 
 # install bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    ros-$ROS_DISTRO-sound-play \
+    ros-${ROS_DISTRO}-sound-play \
     build-essential \
     python3-rosdep \
     python3-rosinstall \
@@ -34,9 +34,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # bootstrap rosdep
 RUN rosdep init && \
-  rosdep update --rosdistro $ROS_DISTRO
+  rosdep update --rosdistro ${ROS_DISTRO}
 
-ENV reset false
+ENV reset true
 
 RUN apt update && apt install -y git curl net-tools
 RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfiles && \
@@ -44,46 +44,32 @@ RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfile
     echo "export minimal=false\nexport install_docker=false\nexport install_node=true\nexport USER=root" >> env.sh && \
     /bin/bash ./install.sh
 
-RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
-ENV pkg_dir /opt/ros/$ROS_DISTRO/share
-
-# build yocs_cmd_vel_mux package
-RUN mkdir -p $pkg_dir/yocs_cmd_vel_mux/src && cd $pkg_dir/yocs_cmd_vel_mux/src && \ 
+# install third party packages
+ENV third_party_ws /root/third_party_ws
+RUN mkdir -p ${third_party_ws}/src && \
+    cd ${third_party_ws}/src && /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_init_workspace" && \
     git clone https://github.com/yujinrobot/yujin_ocs.git && \
     cp -r yujin_ocs/yocs_cmd_vel_mux yocs_cmd_vel_mux && rm -rf yujin_ocs && \
-    cd .. && rosdep install -y --from-paths src/ --ignore-src --rosdistro $ROS_DISTRO && \
-    /bin/bash -c ". /opt/ros/$ROS_DISTRO/setup.bash; catkin_make" && \ 
-    echo "source $pkg_dir/yocs_cmd_vel_mux/devel/setup.bash" >> ~/.bashrc
-
-
-# create catkin_ws
-ENV catkin_ws ~/catkin_ws
-RUN mkdir -p catkin_ws/src && cd catkin_ws/src && /bin/bash -c ". /opt/ros/$ROS_DISTRO/setup.bash; catkin_init_workspace"
-
-
-COPY ./src $catkin_ws/src 
-
-RUN cd catkin_ws && rosdep install -y --from-paths src/ --ignore-src --skip-keys=yocs_cmd_vel_mux --rosdistro $ROS_DISTRO && \
-    /bin/bash -c ". /opt/ros/$ROS_DISTRO/setup.bash; catkin_make" 
-
-# build robot simulator package
-# RUN mkdir catkin_ws/src && cd $catkin_ws/src && git clone https://github.com/gasevi/very_simple_robot_simulator.git && \
-#     cd .. && rosdep install -y --from-paths src/ --ignore-src --skip-keys=yocs_cmd_vel_mux --rosdistro $ROS_DISTRO && \
-#     /bin/bash -c ". /opt/ros/$ROS_DISTRO/setup.bash; catkin_make" 
-
-RUN echo "source $catkin_ws/devel/setup.bash" >> ~/.bashrc
+    git clone https://github.com/yujinrobot/yocs_msgs.git && \
+    git clone https://github.com/sniekum/ar_track_alvar_msgs.git && \
+    git clone https://github.com/rieg-ec/very_simple_robot_simulator.git && \
+    cd .. && rosdep install -y --from-paths src/ --ignore-src --rosdistro ${ROS_DISTRO} && \
+    /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_make" && \
+    echo "source ${third_party_ws}/devel/setup.bash --extend" >> ~/.bashrc
 
 # dependency for very_simple_robot_simulator
-# RUN apt install -y python2 && ln -s /usr/bin/python2 /usr/bin/python
+RUN apt install -y python3-pil python3-pil.imagetk
 
-# install pip2
-# RUN sh -c ' curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py' && python2 get-pip.py
+# create catkin_ws
+ENV catkin_ws /root/catkin_ws
+RUN mkdir -p ${catkin_ws}
 
-# any bash command must be written in here for persistance
-COPY ./volume/setup.bash /setup.bash
-RUN chmod +x /setup.bash
+COPY ./src $catkin_ws/src
 
-RUN echo "source /setup.bash" >> ~/.bashrc
+RUN cd ${catkin_ws}/src && /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_init_workspace" && \
+    cd .. && /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_make" && \
+    echo "source ${catkin_ws}/devel/setup.bash --extend" >> ~/.bashrc
 
 CMD ["bash"]
