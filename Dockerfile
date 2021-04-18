@@ -44,6 +44,9 @@ RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfile
     echo "export minimal=false\nexport install_docker=false\nexport install_node=true\nexport USER=root" >> env.sh && \
     /bin/bash ./install.sh
 
+# to preview markdown with neovim plugin in the browser
+RUN apt install -y xdg-utils --fix-missing
+
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
 # install third party packages
