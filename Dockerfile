@@ -41,8 +41,10 @@ ENV reset true
 RUN apt update && apt install -y git curl net-tools
 RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfiles && \
     chmod +x install.sh && \
-    echo "export minimal=false\nexport install_docker=false\nexport install_node=true\nexport USER=root" >> env.sh && \
+    echo "export install_docker=false\nexport install_node=false\nexport install_nvim=false\nexport USER=root" >> env.sh && \
     /bin/bash ./install.sh
+
+RUN apt install -y vim
 
 # to preview markdown with neovim plugin in the browser
 RUN apt install -y xdg-utils --fix-missing
