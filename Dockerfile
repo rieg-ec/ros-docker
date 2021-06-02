@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN rosdep init && \
   rosdep update --rosdistro ${ROS_DISTRO}
 
-ENV reset true
+ENV reset false
 
 RUN apt update && apt install -y git curl net-tools
 RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfiles && \
@@ -76,5 +76,7 @@ COPY ./src $catkin_ws/src
 RUN cd ${catkin_ws}/src && /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_init_workspace" && \
     cd .. && /bin/bash -c ". /opt/ros/${ROS_DISTRO}/setup.bash; catkin_make" && \
     echo "source ${catkin_ws}/devel/setup.bash --extend" >> ~/.bashrc
+
+RUN apt install -y ros-${ROS_DISTRO}-pid
 
 CMD ["bash"]
