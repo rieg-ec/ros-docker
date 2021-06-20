@@ -1,10 +1,6 @@
-# ROS-Docker-dev
-
-### Steps to run:
+**Docker setup to run ros applications with gui in macOS**
 
 1. install XQuartz
-2. setup xquartz (follow first steps [here](https://sourabhbajaj.com/blog/2017/02/07/gui-applications-docker-mac/) and stop in the _Run XQuartz_ section
-3. clone source code of packages into `src/`
-4. add exec permission to launch script: `chmod +x launch.sh`
-5. run launch script: `./launch.sh`
-6. `docker exec -it <container id> /bin/bash` -container id can be found by running `docker ps`-
+2. setup xquartz (follow first steps [here](https://sourabhbajaj.com/blog/2017/02/07/gui-applications-docker-mac/) and stop in the _Run XQuartz_ section)
+3. clone source code of ros code into `src/`
+4. run launch script: `./launch.sh`
