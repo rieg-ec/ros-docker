@@ -36,8 +36,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN rosdep init && \
   rosdep update --rosdistro ${ROS_DISTRO}
 
-ENV reset false
-
 RUN apt update && apt install -y git curl net-tools
 RUN git clone https://github.com/rieg-ec/dotfiles.git ~/dotfiles && cd ~/dotfiles && \
     chmod +x install.sh && \
